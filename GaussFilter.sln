@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GaussFilter", "GaussFilter.csproj", "{0360E7F2-0F56-4986-91FF-0EAA83AFDEFA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0360E7F2-0F56-4986-91FF-0EAA83AFDEFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0360E7F2-0F56-4986-91FF-0EAA83AFDEFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0360E7F2-0F56-4986-91FF-0EAA83AFDEFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0360E7F2-0F56-4986-91FF-0EAA83AFDEFA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {418FEC9A-A233-4326-9CF8-03B63A819BBA}
+	EndGlobalSection
+EndGlobal
