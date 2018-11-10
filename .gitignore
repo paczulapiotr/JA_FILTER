@@ -5,7 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
-sqlite3/db.lock
+*.lock
 
 # Build results
 [Dd]ebug/

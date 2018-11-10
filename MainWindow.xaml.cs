@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GaussFilter.Model;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Forms;
 
 namespace GaussFilter
 {
@@ -23,6 +12,33 @@ namespace GaussFilter
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new GaussDataContext();
+        }
+
+        private void Input_Path_Find(object sender, RoutedEventArgs e)
+        {
+
+            var openFile = new OpenFileDialog();
+            openFile.Filter = "bitmap files (*.bmp)|*.bmp|jpg files (*.jpg)|*.jpg";
+            //openFile.InitialDirectory = @"C:\";
+            openFile.Title = "Please select an image file.";
+            if (openFile.ShowDialog() == System.Windows.Forms.DialogResult.OK &&
+                DataContext is GaussDataContext context)
+            {
+                context.InputFilePath = openFile.FileName;
+            }
+        }
+
+        private void Output_Path_Find(object sender, RoutedEventArgs e)
+        {
+            var openFile = new FolderBrowserDialog();
+
+            if (openFile.ShowDialog() == System.Windows.Forms.DialogResult.OK &&
+                DataContext is GaussDataContext context)
+            {
+                context.OutputFilePath = openFile.SelectedPath;
+            }
+
         }
     }
 }

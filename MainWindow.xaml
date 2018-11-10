@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GaussFilter"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Filtr Dolnoprzepustowy Gaussa" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -17,16 +17,16 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Column="0" Grid.RowSpan="2" Margin="10">
             <Label>Wybierz implementację:</Label>
-            <RadioButton GroupName="implementation">Assembler</RadioButton>
-            <RadioButton GroupName="implementation" IsChecked="True">C#</RadioButton>
+            <RadioButton GroupName="implementation" IsChecked="{Binding Path=AssemblerImplementationMode, Mode=TwoWay}">Assembler</RadioButton>
+            <RadioButton GroupName="implementation" IsChecked="{Binding Path=CSharpImplementationMode, Mode=TwoWay}">C#</RadioButton>
             <Label Grid.Column="0">Ścieżka obrazu:</Label>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0"></TextBox>
-                <Button  Grid.Column="1" Margin="10 0 0 0">Znajdź</Button>
+                <TextBox  Grid.Column="0" IsReadOnly="True"  Text="{Binding Path=InputFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                <Button  Grid.Column="1" Margin="10 0 0 0" Click="Input_Path_Find">Znajdź</Button>
             </Grid>
             <Label Grid.Column="0">Ścieżka wyjściowa:</Label>
             <Grid>
@@ -34,9 +34,43 @@
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0"></TextBox>
-                <Button  Grid.Column="1" Margin="10 0 0 0">Znajdź</Button>
+                <TextBox IsReadOnly="True" Grid.Column="0" Text="{Binding Path=OutputFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                <Button  Grid.Column="1" Margin="10 0 0 0" Click="Output_Path_Find">Znajdź</Button>
             </Grid>
+            <Grid  Margin="0 10 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+            <Label Grid.Column="0">Wielkość ramki:</Label>
+                <TextBox Margin="5" Grid.Column="1" Text="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            </Grid>
+                <Slider
+    Orientation="Horizontal"
+    Minimum="3"
+    Maximum="7"
+    Value="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+    IsSnapToTickEnabled="True"
+    TickFrequency="2"
+/>
+            <Grid  Margin="0 10 0 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">Promień:</Label>
+                <TextBox  Margin="5" Grid.Column="1" Text="{Binding Path=GaussRadius, UpdateSourceTrigger=PropertyChanged}"/>
+            </Grid>
+            <Slider
+    
+    Orientation="Horizontal"
+    Minimum="0.5"
+    TickFrequency="0.1"
+    IsSnapToTickEnabled="True"
+    Maximum="2"
+    Value="{Binding Path=GaussRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+ 
+/>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -46,11 +80,11 @@
             <Button  Grid.Column="1" Height="40" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 10 10 0 ">Filtruj!</Button>
             <StackPanel  Grid.Column="0"  Margin="10">
                 <Label >Czas wykonania:</Label>
-                <Label>XXX ms</Label>
+                <Label Content="{Binding Path=ElapsedTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></Label>
             </StackPanel>
         </Grid>
 
 
-        <Image Margin="20" Source="C:\Users\Piotr\source\repos\GaussFilter\public\picture2.jpeg"  Grid.Column="1" Grid.RowSpan="2"></Image>
+        <Image Margin="20" Source="{Binding Path=InputFilePath}"  Grid.Column="1" Grid.RowSpan="2"></Image>
     </Grid>
 </Window>
