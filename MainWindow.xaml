@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GaussFilter"
         mc:Ignorable="d"
-        Title="Filtr Dolnoprzepustowy Gaussa" Height="450" Width="800">
+        Title="Filtr Dolnoprzepustowy Gaussa" MinHeight="450" Height="450" MinWidth="800" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -28,24 +28,16 @@
                 <TextBox  Grid.Column="0" IsReadOnly="True"  Text="{Binding Path=InputFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
                 <Button  Grid.Column="1" Margin="10 0 0 0" Click="Input_Path_Find">Znajdź</Button>
             </Grid>
-            <Label Grid.Column="0">Ścieżka wyjściowa:</Label>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBox IsReadOnly="True" Grid.Column="0" Text="{Binding Path=OutputFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-                <Button  Grid.Column="1" Margin="10 0 0 0" Click="Output_Path_Find">Znajdź</Button>
-            </Grid>
+
             <Grid  Margin="0 10 0 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-            <Label Grid.Column="0">Wielkość ramki:</Label>
+                <Label Grid.Column="0">Wielkość ramki:</Label>
                 <TextBox Margin="5" Grid.Column="1" Text="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
             </Grid>
-                <Slider
+            <Slider
     Orientation="Horizontal"
     Minimum="3"
     Maximum="7"
@@ -67,7 +59,7 @@
     Minimum="0.5"
     TickFrequency="0.1"
     IsSnapToTickEnabled="True"
-    Maximum="2"
+    Maximum="50"
     Value="{Binding Path=GaussRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
  
 />
@@ -77,14 +69,24 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Button  Grid.Column="1" Height="40" Width="80" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 10 10 0 ">Filtruj!</Button>
-            <StackPanel  Grid.Column="0"  Margin="10">
-                <Label >Czas wykonania:</Label>
-                <Label Content="{Binding Path=ElapsedTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></Label>
-            </StackPanel>
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button  IsEnabled="{Binding Path=FilterEnabled}" Grid.Column="0" Padding="10" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10 10 0 0 " Click="Filter_Button_Click">Filtruj!</Button>
+                <Button  IsEnabled="{Binding Path=SaveEnabled}" Grid.Column="1" Padding="10" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10 10 0 0" Click="Save_Button_Click">Zapisz</Button>
+            </Grid>
+            <Border Background="#FF4B4B8F" BorderBrush="Gainsboro" BorderThickness="1">
+                <StackPanel Grid.Column="0" Margin="5" RenderTransformOrigin="1,0" Background="White">
+                    <Label Content="Czas wykonania(ms):" />
+                    <Label Content="{Binding Path=ElapsedTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></Label>
+                </StackPanel>
+            </Border>
         </Grid>
 
-
-        <Image Margin="20" Source="{Binding Path=InputFilePath}"  Grid.Column="1" Grid.RowSpan="2"></Image>
+        <Border Grid.Column="1" Margin="10" Background="Black" BorderBrush="Gainsboro" BorderThickness="1">
+            <Image UseLayoutRounding="True" Source="{Binding Path=ImageSource}"   Grid.RowSpan="2"></Image>
+        </Border>
     </Grid>
 </Window>

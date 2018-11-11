@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GaussFilter.Algorithm
 {
@@ -12,7 +9,7 @@ namespace GaussFilter.Algorithm
     {
         private const double PI = 3.1415;
         private const double e = 2.7182;
-        private double maskValuesSum;
+        private readonly double maskValuesSum;
 
         public GaussFilter(int maskSize, double gaussRadius, Bitmap image)
         {
@@ -30,11 +27,11 @@ namespace GaussFilter.Algorithm
         public Bitmap Image { get; private set; }
         public Bitmap FilteredImage { get; private set; }
 
-    
+
         private Bitmap CreateNewBitmap()
         {
-            var newWidth = Image.Width - (MaskSize - 1);
-            var newHeigth = Image.Height - (MaskSize - 1);
+            var newWidth = Image.Width;// - (MaskSize - 1);
+            var newHeigth = Image.Height;// - (MaskSize - 1);
             return new Bitmap(newWidth, newHeigth);
         }
 
@@ -50,31 +47,49 @@ namespace GaussFilter.Algorithm
                 }
             }
         }
-        
+
         private double CalculateWeight(int x, int y)
         {
-            double power = -(x*x+y*y) / (2* Math.Pow(GaussRadius,2));
+            double power = -(x * x + y * y) / (2 * Math.Pow(GaussRadius, 2));
             double weight = 1 / (2 * PI * Math.Pow(GaussRadius, 2)) * Math.Pow(e, power);
             return weight;
         }
-   
-        public void Apply(string path)
+        public void Save(string path)
         {
-
-            int positionDiff = ((MaskSize - 1) / 2);
-
-            for (int i = 0; i < FilteredImage.Height; i++)
+            if (FilteredImage != null)
             {
-                for (int j = 0; j < FilteredImage.Width; j++)
+                FilteredImage.Save(path);
+            }
+        }
+        public void Apply()
+        {
+            int boundSize = (MaskSize - 1) / 2;
+            int lastRowIndex = FilteredImage.Height - 1;
+            int lastColumnIndex = FilteredImage.Width - 1;
+            for (int i = 0; i < FilteredImage.Width; i++)
+            {
+                for (int k = 0; k < boundSize; k++)
                 {
-                    int oldImageX = j + positionDiff;
-                    int oldImageY = i + positionDiff;
-                    Color color = CalculateNewPixel(oldImageX, oldImageY);
+                    FilteredImage.SetPixel(i, k, Image.GetPixel(i, k));
+                    FilteredImage.SetPixel(i, lastRowIndex - k, Image.GetPixel(i, lastRowIndex - k));
+                }
+            }
+
+            for (int i = boundSize; i < FilteredImage.Height - boundSize; i++)
+            {
+                for (int k = 0; k < boundSize; k++)
+                {
+                    FilteredImage.SetPixel(k, i, Image.GetPixel(k, i));
+                    FilteredImage.SetPixel(lastColumnIndex - k, i, Image.GetPixel(lastColumnIndex - k, i));
+                }
+
+                for (int j = boundSize; j < FilteredImage.Width - boundSize; j++)
+                {
+                    Color color = CalculateNewPixel(j, i);
                     FilteredImage.SetPixel(j, i, color);
                 }
-                
+
             }
-            FilteredImage.Save(path);
 
         }
 
@@ -109,7 +124,7 @@ namespace GaussFilter.Algorithm
             B /= maskValuesSum;
             A /= maskValuesSum;
 
-            return Color.FromArgb((int)A,(int)R,(int)G,(int)B);
+            return Color.FromArgb((int)A, (int)R, (int)G, (int)B);
         }
 
 
@@ -119,6 +134,6 @@ namespace GaussFilter.Algorithm
 
 
 
-     
+
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace GaussFilter.Model
 {
@@ -9,27 +11,86 @@ namespace GaussFilter.Model
         private const double MIN_GAUSS_RADIUS = 0.5;
         public GaussDataContext()
         {
-            FrameSize = MIN_FRAME_SIZE;
-            GaussRadius = MIN_GAUSS_RADIUS;
+            _frameSize = MIN_FRAME_SIZE;
+            _radius = MIN_GAUSS_RADIUS;
             CSharpImplementationMode = true;
-
         }
+        private string _elapsedTime;
+        private double _radius;
+        private int _frameSize;
         private string _inputFilePath;
-        private string _outputFilePath;
+        private BitmapImage _imageSource;
+        private Bitmap _image;
+        private Bitmap _filteredImage;
 
+
+        public bool SaveEnabled
+        {
+            get => _filteredImage != null;
+        }
+        public bool FilterEnabled { get => Image != null; }
         public bool AssemblerImplementationMode { get; set; }
         public bool CSharpImplementationMode { get; set; }
-        public int FrameSize { get; set; }
-        public double GaussRadius { get; set; }
-        public string InputFilePath { get=> _inputFilePath; set{
+        public int FrameSize
+        {
+            get => _frameSize; set
+            {
+                _frameSize = value;
+                OnPropertyChanged("FrameSize");
+            }
+        }
+        public double GaussRadius
+        {
+            get => _radius; set
+            {
+                _radius = value;
+                OnPropertyChanged("GaussRadius");
+            }
+        }
+        public string InputFilePath
+        {
+            get => _inputFilePath; set
+            {
                 _inputFilePath = value;
                 OnPropertyChanged("InputFilePath");
-            } }
-        public string OutputFilePath { get=> _outputFilePath; set {
-                _outputFilePath = value;
-                OnPropertyChanged("OutputFilePath");
-            } }
-        public long ElapsedTime { get; set; }
+            }
+        }
+        public string ElapsedTime
+        {
+            get => _elapsedTime;
+            set
+            {
+                _elapsedTime = value;
+                OnPropertyChanged("ElapsedTime");
+            }
+        }
+        public Bitmap Image
+        {
+            get => _image;
+            set
+            {
+                _image = value;
+                OnPropertyChanged("FilterEnabled");
+            }
+        }
+        public Bitmap FilteredImage
+        {
+            get => _filteredImage;
+            set
+            {
+                _filteredImage = value;
+                OnPropertyChanged("FilteredImage");
+                OnPropertyChanged("SaveEnabled");
+            }
+        }
+        public BitmapImage ImageSource
+        {
+            get => _imageSource; set
+            {
+                _imageSource = value;
+                OnPropertyChanged("ImageSource");
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged(string propertyName)
