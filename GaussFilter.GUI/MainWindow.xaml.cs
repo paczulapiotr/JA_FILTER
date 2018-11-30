@@ -1,9 +1,13 @@
-﻿using GaussFilter.Model;
+﻿using GaussFilter.Core;
+using GaussFilter.Core.GaussMask;
+using GaussFilter.Model;
+using GaussFilter.Model.ExternDllParameters;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -55,6 +59,7 @@ namespace GaussFilter
             Stopwatch stopwatch = new Stopwatch();
 
             context.ElapsedTime = "Trwa filtrowanie...";
+
             stopwatch.Start();
             if (context.CSharpImplementationMode)
             {
@@ -65,6 +70,7 @@ namespace GaussFilter
                 context.FilteredImage = await RunAssemblyImplementationFilter(frame, radius, image);
             }
             stopwatch.Stop();
+
             context.ElapsedTime = stopwatch.ElapsedMilliseconds.ToString();
             PrintImageOnGUI(context.FilteredImage);
 
@@ -97,12 +103,11 @@ namespace GaussFilter
 
         }
 
-
         private async Task<Bitmap> RunAssemblyImplementationFilter(int frame, double radius, Bitmap image)
         {
             return await Task.Run(() =>
             {
-                System.Windows.Forms.MessageBox.Show("Not implemented yet");
+                //var value = AssemblyCode(5, 5);
                 return image;
             });
         }
@@ -110,9 +115,8 @@ namespace GaussFilter
         {
             return await Task.Run(() =>
             {
-
-                var gaussFilter = new Algorithm.GaussFilter(frame, radius, image);
-                gaussFilter.Apply();
+            var gaussFilter = new Algorithm.GaussFilter(frame, radius, image, new StandardGaussMaskProvider());
+                gaussFilter.ApplyUnsafe();
                 return gaussFilter.FilteredImage;
             });
         }
@@ -135,6 +139,12 @@ namespace GaussFilter
                 }));
             }
 
+        }
+
+        private unsafe void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Bitmap img = (DataContext as GaussDataContext).Image;
+            PrintImageOnGUI(new ImplementationManager().ApplyAssemblyFilter(img));
         }
     }
 }

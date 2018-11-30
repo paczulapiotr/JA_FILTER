@@ -63,6 +63,7 @@
     Value="{Binding Path=GaussRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
  
 />
+            <Button Margin="50" Click="Button_Click">TEST ASSEMBLER</Button>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
