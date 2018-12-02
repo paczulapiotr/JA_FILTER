@@ -1,2 +1,2 @@
-LIBRARY "Gauss_ASM"
+LIBRARY "GaussFilter.Algorithm.ASM"
 EXPORTS gauss

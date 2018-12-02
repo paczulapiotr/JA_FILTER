@@ -10,20 +10,21 @@ using System.Threading.Tasks;
 
 namespace GaussFilter.Algorithm
 {
-    public class GaussFilter
+    public class GaussFilterCSharp
     {
         private const int BYTES_IN_PIXEL = 3;
         private readonly double maskValuesSum;
         private readonly Action<float> _dispatcher;
 
-        public GaussFilter(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider, Action<float> dispatcher)
+        public GaussFilterCSharp(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider, Action<float> dispatcher)
         {
             _bitmapLastIndex = image.Width * image.Height * BYTES_IN_PIXEL;
             MaskSize = maskSize;
             GaussRadius = gaussRadius;
             Image = image;
             _dispatcher = dispatcher;
-            FilteredImage = CreateNewBitmap();
+            Image = image;
+            FilteredImage = image.Clone() as Bitmap;
             Mask = maskProvider.GetMask(maskSize, gaussRadius);
             maskValuesSum = Mask.Sum(m => m);
             ProgressChanged += GaussFilter_ProgressChanged;
@@ -40,104 +41,6 @@ namespace GaussFilter.Algorithm
         public IList<double> Mask { get; private set; }
         public Bitmap Image { get; private set; }
         public Bitmap FilteredImage { get; private set; }
-
-
-        private Bitmap CreateNewBitmap()
-        {
-            var newWidth = Image.Width;// - (MaskSize - 1);
-            var newHeigth = Image.Height;// - (MaskSize - 1);
-            return new Bitmap(newWidth, newHeigth);
-        }
-        private void CreateMask()
-        {
-            int positionDiff = ((MaskSize - 1) / 2);
-            Mask = new List<double>();
-            for (int i = 0; i < MaskSize; i++)
-            {
-                for (int j = 0; j < MaskSize; j++)
-                {
-                    Mask.Add(CalculateWeight(j - positionDiff, i - positionDiff));
-                }
-            }
-        }
-        private double CalculateWeight(int x, int y)
-        {
-            double power = -(x * x + y * y) / (2 * Math.Pow(GaussRadius, 2));
-            double weight = 1 / (2 * Math.PI * Math.Pow(GaussRadius, 2)) * Math.Pow(Math.E, power);
-            return weight;
-        }
-        private Color CalculateNewPixel(int x, int y)
-        {
-
-            int positionDiff = ((MaskSize - 1) / 2);
-
-            int startingX = x - positionDiff;
-            int startingY = y - positionDiff;
-
-            double R = 0d;
-            double G = 0d;
-            double B = 0d;
-            double A = 0d;
-
-            int maskCounter = 0;
-            for (int i = 0; i < MaskSize; i++)
-            {
-                for (int j = 0; j < MaskSize; j++)
-                {
-                    var oldPixel = Image.GetPixel(startingX + j, startingY + i);
-                    var weight = Mask [maskCounter];
-                    R += oldPixel.R * weight;
-                    G += oldPixel.G * weight;
-                    B += oldPixel.B * weight;
-                    A += oldPixel.A * weight;
-                    maskCounter++;
-                }
-            }
-            R /= maskValuesSum;
-            G /= maskValuesSum;
-            B /= maskValuesSum;
-            A /= maskValuesSum;
-
-            return Color.FromArgb((int)A, (int)R, (int)G, (int)B);
-        }
-        public void Save(string path)
-        {
-            if (FilteredImage != null)
-            {
-                FilteredImage.Save(path);
-            }
-        }
-        public void Apply()
-        {
-            int boundSize = (MaskSize - 1) / 2;
-            int lastRowIndex = FilteredImage.Height - 1;
-            int lastColumnIndex = FilteredImage.Width - 1;
-            for (int i = 0; i < FilteredImage.Width; i++)
-            {
-                for (int k = 0; k < boundSize; k++)
-                {
-                    FilteredImage.SetPixel(i, k, Image.GetPixel(i, k));
-                    FilteredImage.SetPixel(i, lastRowIndex - k, Image.GetPixel(i, lastRowIndex - k));
-                }
-            }
-
-            for (int i = boundSize; i < FilteredImage.Height - boundSize; i++)
-            {
-                for (int k = 0; k < boundSize; k++)
-                {
-                    FilteredImage.SetPixel(k, i, Image.GetPixel(k, i));
-                    FilteredImage.SetPixel(lastColumnIndex - k, i, Image.GetPixel(lastColumnIndex - k, i));
-                }
-
-                for (int j = boundSize; j < FilteredImage.Width - boundSize; j++)
-                {
-                    Color color = CalculateNewPixel(j, i);
-                    FilteredImage.SetPixel(j, i, color);
-                }
-
-            }
-
-        }
 
         public unsafe void ApplyUnsafe()
         {
@@ -196,12 +99,12 @@ namespace GaussFilter.Algorithm
                 index += boundPixelWidth * BYTES_IN_PIXEL;
 
                 //Apply gauss filter
-                for (int i = 0; i < realWidth; i++)
+                for (int i = 0; i < realWidth; i+=3)
                 {
                     ApplyFilterOnPixelUnsafe(original, filtered, Image.Width, index + i);
 
                 }
-                index += realWidth;
+                index += realWidth ;
 
                 //Set end of the row
                 for (int i = 0; i < boundPixelWidth; i++)
@@ -232,22 +135,18 @@ namespace GaussFilter.Algorithm
         {
 
             int positionDiff = ((MaskSize - 1) / 2);
-            // Multiply by 3 cause params arrayWidth is the width of image in pixels(RGB as 1 pixel)
-            int startingIndex = index - (positionDiff * (arrayWidth + 1) * BYTES_IN_PIXEL);
-
             double R = 0d;
             double G = 0d;
             double B = 0d;
             int maskCounter = 0;
             int indexR, indexG, indexB;
-            int newRowParam = arrayWidth * BYTES_IN_PIXEL;
             for (int y = -positionDiff; y <= positionDiff; y++)
             {
                 for (int x = -positionDiff; x <= positionDiff; x++)
                 {
-                    indexR = index + x * BYTES_IN_PIXEL + y * newRowParam;
-                    indexG = index + x * BYTES_IN_PIXEL + y * newRowParam + 1;
-                    indexB = index + x * BYTES_IN_PIXEL + y * newRowParam + 2;
+                    indexR = index + (x + y * arrayWidth) * BYTES_IN_PIXEL;
+                    indexG = index + (x + y * arrayWidth) * BYTES_IN_PIXEL + 1;
+                    indexB = index + (x + y * arrayWidth) * BYTES_IN_PIXEL + 2;
                     //R
                     R += original [indexR] * Mask [maskCounter];
                     //G

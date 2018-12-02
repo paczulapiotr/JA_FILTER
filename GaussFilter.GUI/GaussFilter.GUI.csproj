@@ -104,9 +104,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GaussFilter.Algorithm\GaussFilter.Algorithm.CSharp.csproj">
+    <ProjectReference Include="..\GaussFilter.Algorithm\GaussFilter.Algorithm.csproj">
       <Project>{54aae775-64b5-4f65-89cb-749d64a39e39}</Project>
-      <Name>GaussFilter.Algorithm.CSharp</Name>
+      <Name>GaussFilter.Algorithm</Name>
     </ProjectReference>
     <ProjectReference Include="..\GaussFilter.Core\GaussFilter.Core.csproj">
       <Project>{6bca5cc4-ce4b-4179-b1d6-d10b981b8144}</Project>

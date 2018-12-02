@@ -1,4 +1,5 @@
-﻿using GaussFilter.Core;
+﻿using GaussFilter.Algorithm;
+using GaussFilter.Core;
 using GaussFilter.Core.GaussMask;
 using GaussFilter.Model;
 using System;
@@ -17,20 +18,25 @@ namespace GaussFilter
 
     public partial class MainWindow : Window
     {
-
-
+        private Action<float> dispatcher;
         public MainWindow()
         {
             InitializeComponent();
             DataContext = new GaussDataContext();
+            dispatcher = (newValue) => Dispatcher.InvokeAsync(() =>
+            {
+                (this.DataContext as GaussDataContext).ProgressBar = newValue;
+            });
         }
+
+       
 
         private void Input_Path_Find(object sender, RoutedEventArgs e)
         {
 
             var openFile = new OpenFileDialog
             {
-                Filter = "bitmap files (*.bmp)|*.bmp|jpg files (*.jpg)|*.jpg",
+                Filter = "1.JPeg Image|*.jpg|2.Bitmap Image|*.bmp",
                 //openFile.InitialDirectory = @"C:\";
                 Title = "Please select an image file."
             };
@@ -86,7 +92,7 @@ namespace GaussFilter
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                Filter = "JPeg Image|*.jpg|Bitmap Image|*.bmp",
+                Filter = "1.JPeg Image|*.jpg|2.Bitmap Image|*.bmp",
                 Title = "Save an Image File"
             };
             var result = saveFileDialog.ShowDialog();
@@ -113,19 +119,15 @@ namespace GaussFilter
         {
             return await Task.Run(() =>
             {
-                //var value = AssemblyCode(5, 5);
-                return image;
+                return new GaussFilterAssembly(frame,radius,image,new StandardGaussMaskProvider(), dispatcher).ApplyAssemblyFilter(image);
             });
         }
         private async Task<Bitmap> RunCSharpImplementationFilter(int frame, double radius, Bitmap image)
         {
-            Action<float> dispatcher = (newValue) => Dispatcher.InvokeAsync(() =>
-            {
-                (DataContext as GaussDataContext).ProgressBar = newValue;
-            });
+           
             return await Task.Run(() =>
             {
-                var gaussFilter = new Algorithm.GaussFilter(frame, radius, image, new StandardGaussMaskProvider(), dispatcher);
+                var gaussFilter = new GaussFilterCSharp(frame, radius, image, new StandardGaussMaskProvider(), dispatcher);
                 gaussFilter.ApplyUnsafe();
                 return gaussFilter.FilteredImage;
             });
@@ -151,10 +153,5 @@ namespace GaussFilter
 
         }
 
-        private unsafe void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Bitmap img = (DataContext as GaussDataContext).Image;
-            PrintImageOnGUI(new ImplementationManager().ApplyAssemblyFilter(img));
-        }
     }
 }

@@ -47,9 +47,9 @@
   <ItemGroup>
     <Compile Include="GaussMask\IGaussMaskProvider.cs" />
     <Compile Include="GaussMask\StandardGaussMaskProvider.cs" />
-    <Compile Include="ImplementationManager.cs" />
     <Compile Include="ProgressNotifier\ProgressNotifierEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
