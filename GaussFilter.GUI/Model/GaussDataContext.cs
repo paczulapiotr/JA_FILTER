@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using GaussFilter.Core.ProgressNotifier;
+using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 
@@ -22,8 +24,17 @@ namespace GaussFilter.Model
         private BitmapImage _imageSource;
         private Bitmap _image;
         private Bitmap _filteredImage;
+        private double _progressBar;
 
-
+        public double ProgressBar
+        {
+            get { return _progressBar; }
+            set
+            {
+                _progressBar = value;
+                OnPropertyChanged(nameof(ProgressBar));
+            }
+        }
         public bool SaveEnabled
         {
             get => _filteredImage != null;
@@ -36,7 +47,7 @@ namespace GaussFilter.Model
             get => _frameSize; set
             {
                 _frameSize = value;
-                OnPropertyChanged("FrameSize");
+                OnPropertyChanged(nameof(FrameSize));
             }
         }
         public double GaussRadius
@@ -44,7 +55,7 @@ namespace GaussFilter.Model
             get => _radius; set
             {
                 _radius = value;
-                OnPropertyChanged("GaussRadius");
+                OnPropertyChanged(nameof(GaussRadius));
             }
         }
         public string InputFilePath
@@ -52,7 +63,7 @@ namespace GaussFilter.Model
             get => _inputFilePath; set
             {
                 _inputFilePath = value;
-                OnPropertyChanged("InputFilePath");
+                OnPropertyChanged(nameof(InputFilePath));
             }
         }
         public string ElapsedTime
@@ -61,7 +72,7 @@ namespace GaussFilter.Model
             set
             {
                 _elapsedTime = value;
-                OnPropertyChanged("ElapsedTime");
+                OnPropertyChanged(nameof(ElapsedTime));
             }
         }
         public Bitmap Image
@@ -70,7 +81,7 @@ namespace GaussFilter.Model
             set
             {
                 _image = value;
-                OnPropertyChanged("FilterEnabled");
+                OnPropertyChanged(nameof(FilterEnabled));
             }
         }
         public Bitmap FilteredImage
@@ -79,8 +90,8 @@ namespace GaussFilter.Model
             set
             {
                 _filteredImage = value;
-                OnPropertyChanged("FilteredImage");
-                OnPropertyChanged("SaveEnabled");
+                OnPropertyChanged(nameof(FilteredImage));
+                OnPropertyChanged(nameof(SaveEnabled));
             }
         }
         public BitmapImage ImageSource
@@ -88,7 +99,7 @@ namespace GaussFilter.Model
             get => _imageSource; set
             {
                 _imageSource = value;
-                OnPropertyChanged("ImageSource");
+                OnPropertyChanged(nameof(ImageSource));
             }
         }
 

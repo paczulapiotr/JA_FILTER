@@ -1,10 +1,12 @@
 ﻿using GaussFilter.Core.GaussMask;
+using GaussFilter.Core.ProgressNotifier;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace GaussFilter.Algorithm
 {
@@ -12,17 +14,26 @@ namespace GaussFilter.Algorithm
     {
         private const int BYTES_IN_PIXEL = 3;
         private readonly double maskValuesSum;
+        private readonly Action<float> _dispatcher;
 
-
-        public GaussFilter(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider)
+        public GaussFilter(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider, Action<float> dispatcher)
         {
+            _bitmapLastIndex = image.Width * image.Height * BYTES_IN_PIXEL;
             MaskSize = maskSize;
             GaussRadius = gaussRadius;
             Image = image;
+            _dispatcher = dispatcher;
             FilteredImage = CreateNewBitmap();
-            Mask = maskProvider.GetMask(maskSize,gaussRadius);
+            Mask = maskProvider.GetMask(maskSize, gaussRadius);
             maskValuesSum = Mask.Sum(m => m);
+            ProgressChanged += GaussFilter_ProgressChanged;
         }
+
+        private void GaussFilter_ProgressChanged(object sender, ProgressNotifierEventArgs e)
+        {
+            _dispatcher.Invoke(e.Percentage);
+        }
+        private int _bitmapLastIndex;        
 
         public int MaskSize { get; }
         public double GaussRadius { get; }
@@ -136,7 +147,8 @@ namespace GaussFilter.Algorithm
             byte* original = (byte*)data.Scan0;
 
             byte [] filtered = new byte [dataArraySize];
-            fixed(byte* filteredPtr = filtered){
+            fixed (byte* filteredPtr = filtered)
+            {
 
                 Filter(original, filteredPtr);
                 Marshal.Copy(filtered, 0, (IntPtr)original, dataArraySize);
@@ -146,69 +158,82 @@ namespace GaussFilter.Algorithm
             FilteredImage = bitmap;
         }
 
-        private unsafe void Filter(byte*original, byte* filtered)
+        private unsafe void Filter(byte* original, byte* filtered)
         {
-            int boundSize = (MaskSize - 1) / 2;
-            int boundWidthSize = boundSize * BYTES_IN_PIXEL;
-            int arraySize = Image.Width * Image.Height * BYTES_IN_PIXEL;
-            int boundArraySize = Image.Width * boundSize * BYTES_IN_PIXEL;
-            int bottomBoundStartIndex = arraySize - boundArraySize;
+            int boundPixelWidth = (MaskSize - 1) / 2;
+            int arraySize = Image.Width * Image.Height;
+            int boundTopBottomArraySize = Image.Width * boundPixelWidth;
+            int bottomBoundStartIndex = (arraySize - boundTopBottomArraySize) * BYTES_IN_PIXEL;
 
             //  Set top and bottom bound
-            for (int i = 0; i < boundArraySize; i++)
+            for (int i = 0; i < boundTopBottomArraySize; i++)
             {
-                //Top bound
-                filtered [i] = original [i];
-                //Bot bound
-                filtered [bottomBoundStartIndex + i] = original [bottomBoundStartIndex + i];
+                //Top bound R G B
+                filtered [i * BYTES_IN_PIXEL] = original [i * BYTES_IN_PIXEL];
+                filtered [i * BYTES_IN_PIXEL + 1] = original [i * BYTES_IN_PIXEL + 1];
+                filtered [i * BYTES_IN_PIXEL + 2] = original [i * BYTES_IN_PIXEL + 2];
+                //Bot bound R G B
+                filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL];
+                filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 1] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 1];
+                filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 2] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 2];
             }
 
-            int index = boundArraySize;
-            int realWidth = 3 * Image.Width - 2 * boundWidthSize;
+            int index = boundTopBottomArraySize * BYTES_IN_PIXEL;
+            int realWidth = (Image.Width - 2 * boundPixelWidth) * BYTES_IN_PIXEL;
             while (index < bottomBoundStartIndex)
             {
+
                 //Set start of the row
-                for (int i = 0; i < boundWidthSize; i++)
+                for (int i = 0; i < boundPixelWidth; i++)
                 {
-                    filtered [index + i] = original [index + i];
+                    //R
+                    filtered [index + i * BYTES_IN_PIXEL] = original [index + i * BYTES_IN_PIXEL];
+                    //G
+                    filtered [index + i * BYTES_IN_PIXEL + 1] = original [index + i * BYTES_IN_PIXEL + 1];
+                    //B
+                    filtered [index + i * BYTES_IN_PIXEL + 2] = original [index + i * BYTES_IN_PIXEL + 2];
                 }
-                index += boundWidthSize;
+                index += boundPixelWidth * BYTES_IN_PIXEL;
 
                 //Apply gauss filter
-                for (int i = 0; i < realWidth; i++)//= 3)
+                for (int i = 0; i < realWidth; i++)
                 {
-                    //byte fil = filtered [index + i];
-                    //byte orig = original [index + i];
-                    //filtered [index + i] = orig;
-                    //fil = filtered [index + i];
-                    //orig = original [index + i];
                     ApplyFilterOnPixelUnsafe(original, filtered, Image.Width, index + i);
 
                 }
                 index += realWidth;
 
                 //Set end of the row
-                for (int i = 0; i < boundWidthSize; i++)
+                for (int i = 0; i < boundPixelWidth; i++)
                 {
-                    filtered [index + i] = original [index + i];
+                    //R
+                    filtered [index + i * BYTES_IN_PIXEL] = original [index + i * BYTES_IN_PIXEL];
+                    //G
+                    filtered [index + i * BYTES_IN_PIXEL + 1] = original [index + i * BYTES_IN_PIXEL + 1];
+                    //B
+                    filtered [index + i * BYTES_IN_PIXEL + 2] = original [index + i * BYTES_IN_PIXEL + 2];
                 }
-                index += boundWidthSize;
+                //Should it be here???
+                index += boundPixelWidth * BYTES_IN_PIXEL;
+
+                OnProgressChanged((float)index / (float)_bitmapLastIndex);
+
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="original"></param>
-        /// <param name="filtered"></param>
-        /// <param name="arrayWidth">Bitmap width</param>
+        /// <param name="original">Byte pointer to original bitmap</param>
+        /// <param name="filtered">Byte pointer to filtered bitmap</param>
+        /// <param name="arrayWidth">Bitmap pixels on X axis, width</param>
         /// <param name="index"></param>
         private unsafe void ApplyFilterOnPixelUnsafe(byte* original, byte* filtered, int arrayWidth, int index)
         {
- 
+
             int positionDiff = ((MaskSize - 1) / 2);
             // Multiply by 3 cause params arrayWidth is the width of image in pixels(RGB as 1 pixel)
-            int startingIndex = index - (positionDiff * (arrayWidth + 1) * 3);
+            int startingIndex = index - (positionDiff * (arrayWidth + 1) * BYTES_IN_PIXEL);
 
             double R = 0d;
             double G = 0d;
@@ -233,11 +258,24 @@ namespace GaussFilter.Algorithm
                 }
             }
             //Set R
-            filtered [index] = (byte)(R / maskValuesSum);//maskValuesSum);
+            filtered [index] = (byte)(R / maskValuesSum);
             //Set G
-            filtered [index + 1] = (byte)(G / maskValuesSum);//maskValuesSum);
+            filtered [index + 1] = (byte)(G / maskValuesSum);
             //Set B
-            filtered [index + 2] = (byte)(B / maskValuesSum);//maskValuesSum);
+            filtered [index + 2] = (byte)(B / maskValuesSum);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private event EventHandler<ProgressNotifierEventArgs> ProgressChanged;
+
+        public void OnProgressChanged(float newValue)
+        {
+            ProgressChanged?.Invoke(this, new ProgressNotifierEventArgs(newValue));
+        }
+
+
+
     }
 }

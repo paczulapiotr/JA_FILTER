@@ -22,7 +22,7 @@ namespace GaussFilter.Algorithm.Test
             double gaussRadius = 10.0;
             Mock<IGaussMaskProvider> gaussMaskMock = new Mock<IGaussMaskProvider>();
             gaussMaskMock.Setup(m => m.GetMask(maskSize, gaussRadius)).Returns(FIXED_MASK);
-            GaussFilter gaussFilter = new GaussFilter(maskSize, gaussRadius,new Bitmap("C:\\Users\\Piotr\\source\\repos\\GaussFilter\\GaussFilter.Algorithm.Test\\TestFiles\\test1.bmp"), gaussMaskMock.Object);
+            //GaussFilter gaussFilter = new GaussFilter(maskSize, gaussRadius,new Bitmap("C:\\Users\\Piotr\\source\\repos\\GaussFilter\\GaussFilter.Algorithm.Test\\TestFiles\\test1.bmp"), gaussMaskMock.Object);
             // when
 
             // then

@@ -1,13 +1,11 @@
 ﻿using GaussFilter.Core;
 using GaussFilter.Core.GaussMask;
 using GaussFilter.Model;
-using GaussFilter.Model.ExternDllParameters;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -52,14 +50,20 @@ namespace GaussFilter
 
         private async void Filter_Button_Click(object sender, RoutedEventArgs e)
         {
+
+            Filter_Btn.IsEnabled = false;
+            Find_Btn.IsEnabled = false;
+
             var context = (DataContext as GaussDataContext);
+            context.FilteredImage = null;
             var frame = context.FrameSize;
             var radius = context.GaussRadius;
             var image = context.Image;
             Stopwatch stopwatch = new Stopwatch();
 
             context.ElapsedTime = "Trwa filtrowanie...";
-
+            context.ProgressBar = 0;
+            ProgressBar.Visibility = Visibility.Visible;
             stopwatch.Start();
             if (context.CSharpImplementationMode)
             {
@@ -70,9 +74,11 @@ namespace GaussFilter
                 context.FilteredImage = await RunAssemblyImplementationFilter(frame, radius, image);
             }
             stopwatch.Stop();
-
+            ProgressBar.Visibility = Visibility.Hidden;
             context.ElapsedTime = stopwatch.ElapsedMilliseconds.ToString();
             PrintImageOnGUI(context.FilteredImage);
+            Filter_Btn.IsEnabled = true;
+            Find_Btn.IsEnabled = true;
 
         }
 
@@ -113,9 +119,13 @@ namespace GaussFilter
         }
         private async Task<Bitmap> RunCSharpImplementationFilter(int frame, double radius, Bitmap image)
         {
+            Action<float> dispatcher = (newValue) => Dispatcher.InvokeAsync(() =>
+            {
+                (DataContext as GaussDataContext).ProgressBar = newValue;
+            });
             return await Task.Run(() =>
             {
-            var gaussFilter = new Algorithm.GaussFilter(frame, radius, image, new StandardGaussMaskProvider());
+                var gaussFilter = new Algorithm.GaussFilter(frame, radius, image, new StandardGaussMaskProvider(), dispatcher);
                 gaussFilter.ApplyUnsafe();
                 return gaussFilter.FilteredImage;
             });
