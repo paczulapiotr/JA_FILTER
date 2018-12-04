@@ -41,11 +41,11 @@ namespace GaussFilter.Algorithm
 
         private void GaussFilterAssembly_ProgressChanged(object sender, ProgressNotifierEventArgs e)
         {
-            throw new NotImplementedException();
+            dispatcher.Invoke(e.Percentage);
         }
 
         [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "gauss")]
-        private static extern unsafe int AssemblyCode( byte* original, byte* filtered, int maskSize, double* mask);
+        private static extern unsafe int AssemblyCode(int index, int arrayWidth, byte* original, byte* filtered, double* mask, int maskSize,double maskSum);
 
 
         public unsafe Bitmap ApplyAssemblyFilter(Bitmap _bitmap)
@@ -59,7 +59,7 @@ namespace GaussFilter.Algorithm
             fixed (byte* filteredPtr = filtered)
             {
 
-                Filter(filteredPtr, original);
+                Filter(original,filteredPtr);
                 Marshal.Copy(filtered, 0, (IntPtr)original, dataArraySize);
                 bitmap.UnlockBits(data);
             }
@@ -75,6 +75,7 @@ namespace GaussFilter.Algorithm
             int arraySize = image.Width * image.Height;
             int boundTopBottomArraySize = image.Width * boundPixelWidth;
             int bottomBoundStartIndex = (arraySize - boundTopBottomArraySize) * BYTES_IN_PIXEL;
+            int arrayWidth = image.Width;
 
             //  Set top and bottom bound
             for (int i = 0; i < boundTopBottomArraySize; i++)
@@ -109,7 +110,7 @@ namespace GaussFilter.Algorithm
                 //Apply gauss filter
                 for (int i = 0; i < realWidth; i+=3)
                 {
-                    AssemblyCode(original, filtered, maskSize, mask);//, index + i);
+                    AssemblyCode(index + i, arrayWidth,original, filtered, mask, maskSize, maskSum);
 
                 }
                 index += realWidth;
