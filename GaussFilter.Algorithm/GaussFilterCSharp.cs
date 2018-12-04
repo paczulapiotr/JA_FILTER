@@ -157,11 +157,11 @@ namespace GaussFilter.Algorithm
                 }
             }
             //Set R
-            filtered [index] = (byte)(R / maskValuesSum);
+            filtered [index] = (byte)(R);// / maskValuesSum);
             //Set G
-            filtered [index + 1] = (byte)(G / maskValuesSum);
+            filtered [index + 1] = (byte)(G);// / maskValuesSum);
             //Set B
-            filtered [index + 2] = (byte)(B / maskValuesSum);
+            filtered [index + 2] = (byte)(B);// / maskValuesSum);
         }
 
         /// <summary>

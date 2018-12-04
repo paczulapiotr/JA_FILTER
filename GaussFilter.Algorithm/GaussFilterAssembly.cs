@@ -21,15 +21,11 @@ namespace GaussFilter.Algorithm
         private readonly IGaussMaskProvider maskProvider;
         private readonly Action<float> dispatcher;
         private readonly int bitmapLastIndex;
-        private unsafe double* mask;
-        private readonly double maskSum;
+        private double[] mask;
         public unsafe GaussFilterAssembly(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider, Action<float> dispatcher)
         {
             bitmapLastIndex = image.Width * image.Height * BYTES_IN_PIXEL;
-            var maskTable = maskProvider.GetMask(maskSize, gaussRadius);
-            fixed(double* maskTemp = maskTable)
-                mask = maskTemp;
-            maskSum = maskTable.Sum(m => m);
+            mask = maskProvider.GetMask(maskSize, gaussRadius);
             ProgressChanged += GaussFilterAssembly_ProgressChanged;
             this.maskSize = maskSize;
             this.gaussRadius = gaussRadius;
@@ -45,7 +41,7 @@ namespace GaussFilter.Algorithm
         }
 
         [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "gauss")]
-        private static extern unsafe int AssemblyCode(int index, int arrayWidth, byte* original, byte* filtered, double* mask, int maskSize,double maskSum);
+        private static extern unsafe int AssemblyCode(int index, int arrayWidth, byte* original, byte* filtered, double* mask, int maskSize);
 
 
         public unsafe Bitmap ApplyAssemblyFilter(Bitmap _bitmap)
@@ -110,8 +106,10 @@ namespace GaussFilter.Algorithm
                 //Apply gauss filter
                 for (int i = 0; i < realWidth; i+=3)
                 {
-                    AssemblyCode(index + i, arrayWidth,original, filtered, mask, maskSize, maskSum);
-
+                    fixed (double* maskPtr = mask)
+                    {
+                        AssemblyCode(index + i, arrayWidth, original, filtered, maskPtr, maskSize);
+                    }
                 }
                 index += realWidth;
 

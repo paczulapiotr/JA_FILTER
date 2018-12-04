@@ -20,6 +20,8 @@ namespace GaussFilter.Core.GaussMask
                     mask.Add(CalculateWeight(j - positionDiff, i - positionDiff, gaussRadius));
                 }
             }
+            var sum = mask.Sum();
+            mask = mask.Select(m => m /= sum).ToList();
             return mask.ToArray();
         }
 

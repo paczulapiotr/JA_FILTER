@@ -9,13 +9,16 @@ SUM REAL8 0.046322
 ;byte* filtered,	R9
 ;double* mask,		STACK [rbp+48] 
 ;int maskSize		STACK [rbp+56] 
-;double maskSUm		STACK [rbp+64]
 ;free registers: rax, rdx
 ;maskCounter 		R15D
 gauss proc
 ;Prepare for stack deallocation
 push rbp
 mov rbp, rsp
+push rax
+push rbx
+push rcx
+push rdx
 push r12
 push r13
 push r14
@@ -101,14 +104,10 @@ inc r12d
 jmp XLOOP
 
 ENDLOOP:
-;Normalize RGB
-	movsd XMM3, REAL8 ptr [rbp+64]
-	divsd XMM0, XMM3
-	divsd XMM1, XMM3
-	divsd XMM2, XMM3
+
 ;Allocate byte in pixel
 	cvtsd2si r10d, XMM0
-	cvtsd2si r11d, XMM2
+	cvtsd2si r11d, XMM1
 	cvtsd2si r12d, XMM2
 	mov byte ptr[R9+RCX], r10b
 	mov byte ptr[R9+RCX+1], r11b
@@ -119,6 +118,10 @@ pop r15
 pop r14
 pop r13
 pop r12
+pop rdx
+pop rcx
+pop rbx
+pop rax
 pop rbp
 ret
 gauss endp 

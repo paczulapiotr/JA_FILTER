@@ -35,12 +35,12 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0">Wielkość ramki:</Label>
-                <TextBox Margin="5" Grid.Column="1" Text="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                <Label Margin="5" Grid.Column="1" Content="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></Label>
             </Grid>
             <Slider
     Orientation="Horizontal"
     Minimum="3"
-    Maximum="15"
+    Maximum="31"
     Value="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     IsSnapToTickEnabled="True"
     TickFrequency="2"
@@ -51,7 +51,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0">Promień:</Label>
-                <TextBox  Margin="5" Grid.Column="1" Text="{Binding Path=GaussRadius, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label  Margin="5" Grid.Column="1" Content="{Binding Path=GaussRadius, UpdateSourceTrigger=PropertyChanged}"/>
             </Grid>
             <Slider
     
