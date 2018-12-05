@@ -40,7 +40,7 @@
             <Slider
     Orientation="Horizontal"
     Minimum="3"
-    Maximum="31"
+    Maximum="{Binding Path=MaximumKernelSize, UpdateSourceTrigger=PropertyChanged}"
     Value="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
     IsSnapToTickEnabled="True"
     TickFrequency="2"

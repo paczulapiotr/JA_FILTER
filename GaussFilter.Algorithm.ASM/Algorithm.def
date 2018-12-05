@@ -1,2 +1,4 @@
 LIBRARY "GaussFilter.Algorithm.ASM"
-EXPORTS gauss
+EXPORTS  
+	gauss   @1
+	border   @2

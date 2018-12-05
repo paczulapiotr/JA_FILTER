@@ -1,5 +1,4 @@
 ﻿using GaussFilter.Algorithm;
-using GaussFilter.Core;
 using GaussFilter.Core.GaussMask;
 using GaussFilter.Model;
 using System;
@@ -12,6 +11,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Linq;
 
 namespace GaussFilter
 {
@@ -37,27 +37,32 @@ namespace GaussFilter
             var openFile = new OpenFileDialog
             {
                 Filter = "1.JPeg Image|*.jpg|2.Bitmap Image|*.bmp",
-                //openFile.InitialDirectory = @"C:\";
                 Title = "Please select an image file."
             };
             if (openFile.ShowDialog() == System.Windows.Forms.DialogResult.OK &&
                 DataContext is GaussDataContext context)
             {
                 context.InputFilePath = openFile.FileName;
-                context.FilteredImage = null;
-                context.Image = new Bitmap(openFile.FileName);
-
-                PrintImageOnGUI(context.Image);
-
-
+                var newBitmap = new Bitmap(openFile.FileName);
+                int minSize = new [] { newBitmap.Width, newBitmap.Height }.Min();
+                if (minSize >= 50)
+                {
+                    context.Image = newBitmap;
+                    int newKernel = (int)((double)minSize / 10d);
+                    context.MaximumKernelSize = (newKernel % 2 == 0) ? newKernel + 1 : newKernel;
+                    PrintImageOnGUI(context.Image);
+                }
+                else
+                {
+                    context.Image = null;
+                    System.Windows.Forms.MessageBox.Show("Picture is too small. Min height/weight is 50x50.");
+                }
             }
         }
 
 
         private async void Filter_Button_Click(object sender, RoutedEventArgs e)
         {
-
-            Filter_Btn.IsEnabled = false;
             Find_Btn.IsEnabled = false;
 
             var context = (DataContext as GaussDataContext);
@@ -65,6 +70,7 @@ namespace GaussFilter
             var frame = context.FrameSize;
             var radius = context.GaussRadius;
             var image = context.Image;
+            context.Image = null;
             Stopwatch stopwatch = new Stopwatch();
 
             context.ElapsedTime = "Trwa filtrowanie...";
@@ -82,8 +88,8 @@ namespace GaussFilter
             stopwatch.Stop();
             ProgressBar.Visibility = Visibility.Hidden;
             context.ElapsedTime = stopwatch.ElapsedMilliseconds.ToString();
+            context.Image = image;
             PrintImageOnGUI(context.FilteredImage);
-            Filter_Btn.IsEnabled = true;
             Find_Btn.IsEnabled = true;
 
         }

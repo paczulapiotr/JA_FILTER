@@ -25,6 +25,18 @@ namespace GaussFilter.Model
         private Bitmap _image;
         private Bitmap _filteredImage;
         private double _progressBar;
+        private int _maximumKernelSize;
+
+        public int MaximumKernelSize
+        {
+            get { return _maximumKernelSize; }
+            set
+            {
+                _maximumKernelSize = value;
+                OnPropertyChanged(nameof(MaximumKernelSize));
+            }
+        }
+
 
         public double ProgressBar
         {
@@ -39,7 +51,10 @@ namespace GaussFilter.Model
         {
             get => _filteredImage != null;
         }
-        public bool FilterEnabled { get => Image != null; }
+        public bool FilterEnabled
+        {
+            get => _image != null;
+        }
         public bool AssemblerImplementationMode { get; set; }
         public bool CSharpImplementationMode { get; set; }
         public int FrameSize
@@ -81,6 +96,7 @@ namespace GaussFilter.Model
             set
             {
                 _image = value;
+                OnPropertyChanged(nameof(Image));
                 OnPropertyChanged(nameof(FilterEnabled));
             }
         }

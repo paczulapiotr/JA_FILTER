@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace GaussFilter.Algorithm
 {
@@ -130,13 +129,6 @@ namespace GaussFilter.Algorithm
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="original">Byte pointer to original bitmap</param>
-        /// <param name="filtered">Byte pointer to filtered bitmap</param>
-        /// <param name="arrayWidth">Bitmap pixels on X axis, width</param>
-        /// <param name="index"></param>
         private unsafe void ApplyFilterOnPixelUnsafe(byte* original, byte* filtered, int arrayWidth, int index)
         {
 
@@ -167,18 +159,15 @@ namespace GaussFilter.Algorithm
                 }
             }
             //Set R
-            filtered [index] = (byte)(R);// / maskValuesSum);
+            filtered [index] = (byte)(R);
             //Set G
-            filtered [index + 1] = (byte)(G);// / maskValuesSum);
+            filtered [index + 1] = (byte)(G);
             //Set B
-            filtered [index + 2] = (byte)(B);// / maskValuesSum);
+            filtered [index + 2] = (byte)(B);
             //Set A
-            filtered [index + 3] = (byte)(A);// / maskValuesSum);
+            filtered [index + 3] = (byte)(A);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         private event EventHandler<ProgressNotifierEventArgs> ProgressChanged;
 
         public void OnProgressChanged(float newValue)
