@@ -12,7 +12,7 @@ namespace GaussFilter.Algorithm
 {
     public class GaussFilterCSharp
     {
-        private const int BYTES_IN_PIXEL = 3;
+        private const int BYTES_IN_PIXEL = 4;
         private readonly double maskValuesSum;
         private readonly Action<float> _dispatcher;
 
@@ -45,8 +45,8 @@ namespace GaussFilter.Algorithm
         public unsafe void ApplyUnsafe()
         {
             Bitmap bitmap = (Bitmap)Image.Clone();
-            int dataArraySize = 3 * bitmap.Width * bitmap.Height;
-            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+            int dataArraySize = BYTES_IN_PIXEL * bitmap.Width * bitmap.Height;
+            BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             byte* original = (byte*)data.Scan0;
 
             byte [] filtered = new byte [dataArraySize];
@@ -71,14 +71,16 @@ namespace GaussFilter.Algorithm
             //  Set top and bottom bound
             for (int i = 0; i < boundTopBottomArraySize; i++)
             {
-                //Top bound R G B
+                //Top bound R G B A
                 filtered [i * BYTES_IN_PIXEL] = original [i * BYTES_IN_PIXEL];
                 filtered [i * BYTES_IN_PIXEL + 1] = original [i * BYTES_IN_PIXEL + 1];
                 filtered [i * BYTES_IN_PIXEL + 2] = original [i * BYTES_IN_PIXEL + 2];
-                //Bot bound R G B
+                filtered [i * BYTES_IN_PIXEL + 3] = original [i * BYTES_IN_PIXEL + 3];
+                //Bot bound R G B A
                 filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL];
                 filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 1] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 1];
                 filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 2] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 2];
+                filtered [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 3] = original [bottomBoundStartIndex + i * BYTES_IN_PIXEL + 3];
             }
 
             int index = boundTopBottomArraySize * BYTES_IN_PIXEL;
@@ -95,11 +97,13 @@ namespace GaussFilter.Algorithm
                     filtered [index + i * BYTES_IN_PIXEL + 1] = original [index + i * BYTES_IN_PIXEL + 1];
                     //B
                     filtered [index + i * BYTES_IN_PIXEL + 2] = original [index + i * BYTES_IN_PIXEL + 2];
+                    //A
+                    filtered [index + i * BYTES_IN_PIXEL + 3] = original [index + i * BYTES_IN_PIXEL + 3];
                 }
                 index += boundPixelWidth * BYTES_IN_PIXEL;
 
                 //Apply gauss filter
-                for (int i = 0; i < realWidth; i+=3)
+                for (int i = 0; i < realWidth; i+=BYTES_IN_PIXEL)
                 {
                     ApplyFilterOnPixelUnsafe(original, filtered, Image.Width, index + i);
 
@@ -115,6 +119,8 @@ namespace GaussFilter.Algorithm
                     filtered [index + i * BYTES_IN_PIXEL + 1] = original [index + i * BYTES_IN_PIXEL + 1];
                     //B
                     filtered [index + i * BYTES_IN_PIXEL + 2] = original [index + i * BYTES_IN_PIXEL + 2];
+                    //B
+                    filtered [index + i * BYTES_IN_PIXEL + 3] = original [index + i * BYTES_IN_PIXEL + 3];
                 }
                 //Should it be here???
                 index += boundPixelWidth * BYTES_IN_PIXEL;
@@ -138,8 +144,9 @@ namespace GaussFilter.Algorithm
             double R = 0d;
             double G = 0d;
             double B = 0d;
+            double A = 0d;
             int maskCounter = 0;
-            int indexR, indexG, indexB;
+            int indexR, indexG, indexB, indexA;
             for (int y = -positionDiff; y <= positionDiff; y++)
             {
                 for (int x = -positionDiff; x <= positionDiff; x++)
@@ -147,12 +154,15 @@ namespace GaussFilter.Algorithm
                     indexR = index + (x + y * arrayWidth) * BYTES_IN_PIXEL;
                     indexG = index + (x + y * arrayWidth) * BYTES_IN_PIXEL + 1;
                     indexB = index + (x + y * arrayWidth) * BYTES_IN_PIXEL + 2;
+                    indexA = index + (x + y * arrayWidth) * BYTES_IN_PIXEL + 3;
                     //R
                     R += original [indexR] * Mask [maskCounter];
                     //G
                     G += original [indexG] * Mask [maskCounter];
                     //B
                     B += original [indexB] * Mask [maskCounter];
+                    //A
+                    A += original [indexB] * Mask [maskCounter];
                     maskCounter++;
                 }
             }
@@ -162,6 +172,8 @@ namespace GaussFilter.Algorithm
             filtered [index + 1] = (byte)(G);// / maskValuesSum);
             //Set B
             filtered [index + 2] = (byte)(B);// / maskValuesSum);
+            //Set A
+            filtered [index + 3] = (byte)(A);// / maskValuesSum);
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 
 .data 
-BYTE_IN_PIXEL dword 3
+BYTE_IN_PIXEL dword 4
 SUM REAL8 0.046322
 .code
 ;int index, 		RCX 
@@ -31,6 +31,7 @@ mov ebx, edx
 xorpd XMM0, XMM0
 xorpd XMM1, XMM1
 xorpd XMM2, XMM2
+xorpd XMM3, XMM3
 ;set mask counter
 xor r15d, r15d 
 ;set positionDiff to R10D
@@ -61,39 +62,51 @@ imul BYTE_IN_PIXEL
 add eax, ecx
 ;add to R 
 	;zero temp register 
-	xorpd XMM3, XMM3
+	xorpd XMM4, XMM4
 	xor edx, edx
 	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM3, edx
-	xorpd XMM4, XMM4
+	CVTSI2SD XMM4, edx
+	xorpd XMM5, XMM5
 	mov rdx, qword ptr[rbp+48]
-	movsd XMM4, REAL8 ptr[rdx + r15]
-	mulsd XMM3, XMM4
-	addsd XMM0, XMM3
+	movsd XMM5, REAL8 ptr[rdx + r15]
+	mulsd XMM4, XMM5
+	addsd XMM0, XMM4
 ;increment index
 	inc eax
 ;add to G
-	xorpd XMM3, XMM3
+	xorpd XMM4, XMM4
 	xor edx, edx
 	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM3, edx
-	xorpd XMM4, XMM4
+	CVTSI2SD XMM4, edx
+	xorpd XMM5, XMM5
 	mov rdx, qword ptr[rbp+48]
-	movsd XMM4, REAL8 ptr[rdx + r15]
-	mulsd XMM3, XMM4
-	addsd XMM1, XMM3
+	movsd XMM5, REAL8 ptr[rdx + r15]
+	mulsd XMM4, XMM5
+	addsd XMM1, XMM4
 ;increment index
 	inc eax
 ;add to B
-	xorpd XMM3, XMM3
+	xorpd XMM4, XMM4
 	xor edx, edx
 	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM3, edx
-	xorpd XMM4, XMM4
+	CVTSI2SD XMM4, edx
+	xorpd XMM5, XMM5
 	mov rdx, qword ptr[rbp+48]
-	movsd XMM4, REAL8 ptr[rdx + r15]
-	mulsd XMM3, XMM4
-	addsd XMM2, XMM3
+	movsd XMM5, REAL8 ptr[rdx + r15]
+	mulsd XMM4, XMM5
+	addsd XMM2, XMM4
+;increment index
+inc eax
+;add to B
+	xorpd XMM4, XMM4
+	xor edx, edx
+	mov dl, byte ptr[r8 + rax]
+	CVTSI2SD XMM4, edx
+	xorpd XMM5, XMM5
+	mov rdx, qword ptr[rbp+48]
+	movsd XMM5, REAL8 ptr[rdx + r15]
+	mulsd XMM4, XMM5
+	addsd XMM3, XMM4
 ;increment maskCounter
 add r15d, 8
 
@@ -109,9 +122,11 @@ ENDLOOP:
 	cvtsd2si r10d, XMM0
 	cvtsd2si r11d, XMM1
 	cvtsd2si r12d, XMM2
+	cvtsd2si r13d, XMM3
 	mov byte ptr[R9+RCX], r10b
 	mov byte ptr[R9+RCX+1], r11b
 	mov byte ptr[R9+RCX+2], r12b
+	mov byte ptr[R9+RCX+3], r13b
 
 ;Clear stack
 pop r15
