@@ -117,7 +117,7 @@ namespace GaussFilter.Algorithm
                     //A
                     filtered [index + byteIndex + 3] = original [index + byteIndex + 3];
                 }
-                //Should it be here???
+
                 index += boundPixelWidth * BYTES_IN_PIXEL;
 
                 OnProgressChanged(index / (float)bitmapLastIndex);

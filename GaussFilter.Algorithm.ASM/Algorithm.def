@@ -1,4 +1,4 @@
-LIBRARY "GaussFilter.Algorithm.ASM"
+LIBRARY "GaussFilter.Algorithm.ASM.dll"
 EXPORTS  
 	gauss   @1
 	border   @2
