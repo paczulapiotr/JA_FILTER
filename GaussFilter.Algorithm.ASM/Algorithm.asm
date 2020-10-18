@@ -1,6 +1,7 @@
 .data 
 ; amount of bytes in one pixel
 BYTE_IN_PIXEL dword 4
+BYTE_IN_PIXEL_Q qword 4
 ZERO dword 0
 .code
 ; ==============================================================
@@ -74,18 +75,131 @@ call set_pixel_to_black
 
 mov r15d, dword ptr[rbp+60]
 mov r14d, 2
-INSIDEROW:
-	; add 1st subpixels from mask
-	; add 2nd subpixels from mask
-	; add 3rd subpixels from mask
-	; add 4th subpixels from mask
-	; add 5th subpixels from mask
-	; add 6th subpixels from mask
-	; add 7th subpixels from mask
-	; add 8th subpixels from mask
-	; add 9th subpixels from mask
-	; check max/min for subpixels
 
+mov rbx, rax
+add rbx, r8
+xor rcx, rcx
+xor rdx, rdx
+INSIDEROW:
+	; R
+	xor r10, r10
+	; G
+	xor r11, r11
+	; B
+	xor r12, r12
+	; A
+	xor r13, r13
+	
+; R
+	; add 1st subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		sub rdx, rcx
+		sub rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx]
+		add r10d, ecx
+	; add 2nd subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		sub rdx, rcx
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+4]
+		add r10d, ecx
+	; add 3rd subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		sub rdx, rcx
+		add rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+8]
+		add r10d, ecx
+	; add 4th subpixels from mask
+		mov rdx, rbx
+		xor rcx, rcx
+		sub rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+12]
+		add r10d, ecx
+	; add 5th subpixels from mask
+		mov rdx, rbx
+		xor rcx, rcx
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+16]
+		add r10d, ecx
+	; add 6th subpixels from mask
+		mov rdx, rbx
+		xor rcx, rcx
+		add rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+20]
+		add r10d, ecx
+	; add 7th subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		add rdx, rcx
+		sub rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+24]
+		add r10d, ecx
+	; add 8th subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		add rdx, rcx
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+28]
+		add r10d, ecx
+	; add 9th subpixels from mask
+		mov rdx, rbx
+		mov ecx, dword ptr[rbp+60]
+		imul rcx, BYTE_IN_PIXEL_Q
+		add rdx, rcx
+		add rdx, BYTE_IN_PIXEL_Q
+		; get corresponding image subpixel
+		mov cl, byte ptr[rdx]
+		; get mask pointer to edx
+		mov rdx, qword ptr[rbp+48]
+		; multiply mask value with 
+		imul ecx, dword ptr[rdx+32]
+		add r10d, ecx
+	; check max/min for subpixels
 
 	inc r14d
 	add eax, BYTE_IN_PIXEL
@@ -98,7 +212,7 @@ call set_pixel_to_black
 
 ; set last pixel from row to black
 
-	cmp eax, dword ptr[rbp+68]
+	cmp eax, dword ptr[rbp+48]
 	jz ENDMAINLOOP
 	jmp MAINLOOP
 ENDMAINLOOP:
