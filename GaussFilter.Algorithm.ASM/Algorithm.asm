@@ -64,26 +64,37 @@ call set_row_to_black
 mov [rbp+68], r15d
 
 ; set index to second row
-mov rax, dword ptr[rbp+60]
-shl rax, 2
+mov eax, dword ptr[rbp+60]
+shl eax, 2
 
 ; run main loop
 MAINLOOP:
 ; set first pixel from row to black
+call set_pixel_to_black
 
+mov r15d, dword ptr[rbp+60]
+mov r14d, 2
 INSIDEROW:
-; add 1st subpixels from mask
-; add 2nd subpixels from mask
-; add 3rd subpixels from mask
-; add 4th subpixels from mask
-; add 5th subpixels from mask
-; add 6th subpixels from mask
-; add 7th subpixels from mask
-; add 8th subpixels from mask
-; add 9th subpixels from mask
-; check max/min for subpixels
-	inc rax
-INSIDEROW:
+	; add 1st subpixels from mask
+	; add 2nd subpixels from mask
+	; add 3rd subpixels from mask
+	; add 4th subpixels from mask
+	; add 5th subpixels from mask
+	; add 6th subpixels from mask
+	; add 7th subpixels from mask
+	; add 8th subpixels from mask
+	; add 9th subpixels from mask
+	; check max/min for subpixels
+
+
+	inc r14d
+	add eax, BYTE_IN_PIXEL
+	cmp r14d, r15d
+	jz ENDINSIDEROW
+	jmp INSIDEROW
+ENDINSIDEROW:
+
+call set_pixel_to_black
 
 ; set last pixel from row to black
 
@@ -107,8 +118,24 @@ CLEARSTACK:
 laplace endp 
 
 
-
-
+set_pixel_to_black proc
+	mov edx, 0
+	mov rbx, rax
+	add rbx, r9
+	;set R
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set G
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set B
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set A
+	mov dword ptr[rbx], edx
+	add eax, BYTE_IN_PIXEL
+	ret
+set_pixel_to_black endp
 
 set_row_to_black proc
 
@@ -128,7 +155,7 @@ FIRSTROWLOOP:
 	inc rbx
 	;set A
 	mov dword ptr[rbx], edx
-	add eax, 4
+	add eax, BYTE_IN_PIXEL
 	cmp eax, dword ptr[rbp+68]
 	jz ENDFIRSTROWLOOP
 	jmp FIRSTROWLOOP
