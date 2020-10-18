@@ -28,13 +28,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="Algorithm.asm">
-      <Filter>Source Files</Filter>
-    </MASM>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Algorithm.def">
       <Filter>Source Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Algorithm.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

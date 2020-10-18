@@ -1,27 +1,29 @@
 .data 
 ; amount of bytes in one pixel
 BYTE_IN_PIXEL dword 4
+ZERO dword 0
 .code
 ; ==============================================================
 ; Main procedure used for blurring one pixel image row, 
 ; right and left border is not included.
 ; ### PARAMETERS ###
-;	int index,			RCX 					[starting byte index of row]
-;	int arrayWidth,		RDX (moved to EBX)		[array row width in pixels]
-;	byte* original,		R8						[byte array of original image]
-;	byte* filtered,		R9						[byte array of filtered image]
-;	double* mask,		STACK [rbp+48] 			[gauss mask table pointer]
-;	int maskSize		STACK [rbp+56] 			[gauss mask table size]
+;	int width,						RCX => [rbp+60]			[image pixel width]
+;	int height,	    				RDX => [rbp+64]			[image pixel height]
+; 	int endSubpixelIndex			[rbp+68]				[used for end condition for set_row_to_black proc and main loop]
+;	byte* original,					R8						[byte array of original image]
+;	byte* filtered,					R9						[byte array of filtered image]
+;	int* mask,		    			STACK [rbp+48] 			[laplace mask table pointer]
+;	int subPixelsCount,				STACK [rbp+56] 			[image pixels count]
 ; ### USED REGISTERS ###
-;	R10D, border position differece	
-;	R11D, Y loop param
-;	R12D, X loop param
-;	R13D, Row loop param
-;	R14D, real row width
-;	R15D, gauss mask table counter
+; rax current subpixel index 
+; r8 
+; r9 
+
+; ### FREE REGISTERS ###
+; rbx,rcx,rdx,r10,r11,r12,r13,r14,r15
 ; ==============================================================
 
-gauss proc
+laplace proc
 ; prepare for stack deallocation
 push rbp
 mov rbp, rsp
@@ -33,138 +35,62 @@ push r12
 push r13
 push r14
 push r15
-; arrayWidth dword ptr[rbp+40]
-; index dword ptr[rbp+48]
-; mov arrayWidth
-mov ebx, edx
-; calculate positionDiff to R10D
-mov R10D, dword ptr[rbp+56]
-sub R10D, 1
-shr R10D, 1
-; calculate realWidth to R14D
-mov eax, R10D
-shl eax, 1
-sub edx, eax
-mov eax, edx
-mul BYTE_IN_PIXEL
-mov R14D,eax
+; main code
+PREPAREVARIABLES:
+mov [rbp+60], ecx
+mov [rbp+64], edx
 
-; row param for loop
-xor r13d, r13d
-ROWLOOP:
-; set mask counter
-	xor r15d, r15d 
-; set R,G,B sum registers
-	xorpd XMM0, XMM0
-	xorpd XMM1, XMM1
-	xorpd XMM2, XMM2
-	xorpd XMM3, XMM3
+; set top row to black
+mov edx, dword ptr[rbp+60]
+imul edx, 4
+mov [rbp+68], edx
 
-; y param for loop
-	mov r11d, r10d
-	neg r11d
-	dec r11d
+xor rax, rax
+call set_row_to_black
 
-; x param for loop
-RESETX:
-	mov r12d, R10D
-	neg r12d
+; set bottom row to black
+mov r15d, dword ptr[rbp+56]
+sub r15d, dword ptr[rbp+60]
+sub r15d, dword ptr[rbp+60]
+sub r15d, dword ptr[rbp+60]
+sub r15d, dword ptr[rbp+60]
+; set start index of row to black out
+mov eax, r15d
+mov r14d, dword ptr[rbp+56]
+mov [rbp+68], r14d
+call set_row_to_black
 
-YLOOP:
-	cmp r11d, R10D
-; end loop if zero
-	jz SETPIXEL 
-	inc r11d
-XLOOP:
-; X loop code start:
-; calculate Index into eax
-	mov eax, r11d
-	imul ebx
-	add eax, r12d
-	imul BYTE_IN_PIXEL
-	add eax, ecx
-; add to R 
-	xorpd XMM4, XMM4
-	xor edx, edx
-	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM4, edx
-	xorpd XMM5, XMM5
-	mov rdx, qword ptr[rbp+48]
-	movsd XMM5, REAL8 ptr[rdx + r15]
-	mulsd XMM4, XMM5
-	addsd XMM0, XMM4
-; increment index
-	inc eax
-; add to G
-	xorpd XMM4, XMM4
-	xor edx, edx
-	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM4, edx
-	xorpd XMM5, XMM5
-	mov rdx, qword ptr[rbp+48]
-	movsd XMM5, REAL8 ptr[rdx + r15]
-	mulsd XMM4, XMM5
-	addsd XMM1, XMM4
-; increment index
-	inc eax
-; add to B
-	xorpd XMM4, XMM4
-	xor edx, edx
-	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM4, edx
-	xorpd XMM5, XMM5
-	mov rdx, qword ptr[rbp+48]
-	movsd XMM5, REAL8 ptr[rdx + r15]
-	mulsd XMM4, XMM5
-	addsd XMM2, XMM4
-; increment index
-	inc eax
-; add to A
-	xorpd XMM4, XMM4
-	xor edx, edx
-	mov dl, byte ptr[r8 + rax]
-	CVTSI2SD XMM4, edx
-	xorpd XMM5, XMM5
-	mov rdx, qword ptr[rbp+48]
-	movsd XMM5, REAL8 ptr[rdx + r15]
-	mulsd XMM4, XMM5
-	addsd XMM3, XMM4
-; increment maskCounter
-	add r15d, 8
+; set end index for main loop
+mov [rbp+68], r15d
 
-; X loop code end
-	cmp r12d, R10D
-	jz RESETX ;
-	inc r12d
-	jmp XLOOP
+; set index to second row
+mov rax, dword ptr[rbp+60]
+shl rax, 2
 
-SETPIXEL:
+; run main loop
+MAINLOOP:
+; set first pixel from row to black
 
-; allocate byte in pixel
-; set R
-	mov rdx, r9
-	add rdx, rcx
-	cvtsd2si eax, XMM0
-	mov byte ptr[rdx], al
-; set G
-	inc rdx
-	cvtsd2si eax, XMM1
-	mov byte ptr[rdx], al
-; set B
-	inc rdx
-	cvtsd2si eax, XMM2
-	mov byte ptr[rdx], al
-; set A
-	inc rdx
-	cvtsd2si eax, XMM3
-	mov byte ptr[rdx], al
-; increment row loop param
-	add R13D, BYTE_IN_PIXEL
-; increment current index in bitmap
-	add ecx, BYTE_IN_PIXEL
-	cmp R13D,R14D
-	jz CLEARSTACK
-	jmp ROWLOOP
+INSIDEROW:
+; add 1st subpixels from mask
+; add 2nd subpixels from mask
+; add 3rd subpixels from mask
+; add 4th subpixels from mask
+; add 5th subpixels from mask
+; add 6th subpixels from mask
+; add 7th subpixels from mask
+; add 8th subpixels from mask
+; add 9th subpixels from mask
+; check max/min for subpixels
+	inc rax
+INSIDEROW:
+
+; set last pixel from row to black
+
+	cmp eax, dword ptr[rbp+68]
+	jz ENDMAINLOOP
+	jmp MAINLOOP
+ENDMAINLOOP:
 
 CLEARSTACK:
 ; clear stack
@@ -178,18 +104,41 @@ CLEARSTACK:
 	pop rax
 	pop rbp
 	ret
-gauss endp 
+laplace endp 
 
-; ==============================================================
-; Procedures sets top and bottom border of image.
-; ###PARAMETERS###
-;	byte* original, ecx (moved to r10d)		[byte array of original image]
-;	byte* filtered, edx (moved to r11d)		[byte array of fultered image]
-;	int topBottomBorderSize, r8d 			[amount of bytes in top/bottom borders]
-;	int bottomBoundStartIndex, r9d 			[starting index of bottom border]
-; ### USED REGISTERS ###
-;	ebx, loop counter
-; ==============================================================
+
+
+
+
+set_row_to_black proc
+
+;set first row to black
+mov edx, 0
+FIRSTROWLOOP:
+	mov rbx, rax
+	add rbx, r9
+	;set R
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set G
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set B
+	mov dword ptr[rbx], edx
+	inc rbx
+	;set A
+	mov dword ptr[rbx], edx
+	add eax, 4
+	cmp eax, dword ptr[rbp+68]
+	jz ENDFIRSTROWLOOP
+	jmp FIRSTROWLOOP
+ENDFIRSTROWLOOP:
+	ret
+
+set_row_to_black endp
+
+
+
 
 border proc
 ; preconditions

@@ -17,11 +17,14 @@ namespace GaussFilter.Algorithm
         private readonly IGaussMaskProvider maskProvider;
         private readonly Action<float> dispatcher;
         private readonly int bitmapLastIndex;
-        private readonly double [] mask;
+        private readonly double[] mask;
         public unsafe GaussFilterAssembly(int maskSize, double gaussRadius, Bitmap image, IGaussMaskProvider maskProvider, Action<float> dispatcher)
         {
             bitmapLastIndex = image.Width * image.Height * BYTES_IN_PIXEL;
-            mask = maskProvider.GetMask(maskSize, gaussRadius);
+            mask = new double[] {
+                        -1, -1, -1,
+                        -1,  8, -1,
+                        -1, -1, -1 };//maskProvider.GetMask(maskSize, gaussRadius);
             ProgressChanged += GaussFilterAssembly_ProgressChanged;
             this.maskSize = maskSize;
             this.gaussRadius = gaussRadius;
@@ -36,7 +39,10 @@ namespace GaussFilter.Algorithm
             dispatcher.Invoke(e.Percentage);
         }
 
-        [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "gauss")]
+        [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "laplace")]
+        private static extern unsafe int ApplyLaplaceAsm(int width, int height, byte* original, byte* filtered, int* mask, int imagePixelsCount);
+
+        [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "laplace")]
         private static extern unsafe int AplyGaussAsm(int index, int arrayWidth, byte* original, byte* filtered, double* mask, int maskSize);
 
         [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "border")]
@@ -48,7 +54,7 @@ namespace GaussFilter.Algorithm
             BitmapData data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             byte* original = (byte*)data.Scan0;
 
-            byte [] filtered = new byte [dataArraySize];
+            byte[] filtered = new byte[dataArraySize];
             fixed (byte* filteredPtr = filtered)
             {
 
@@ -72,57 +78,61 @@ namespace GaussFilter.Algorithm
             int arrayWidth = image.Width;
             int byteIndex;
 
-            //  Set top and bottom bound
-            SetTopBottomBorderAsm(original, filtered, boundTopBottomArraySizeInBytes, bottomBoundStartIndex);
-
-            int index = boundTopBottomArraySizeInBytes;
-            int realWidth = (image.Width - 2 * boundPixelWidth) * BYTES_IN_PIXEL;
-            while (index < bottomBoundStartIndex)
+            fixed(int* mask = new int[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 })
             {
-
-                //Set start of the row
-                for (int i = 0; i < boundPixelWidth; i++)
-                {
-                    byteIndex = i * BYTES_IN_PIXEL;
-                    //R
-                    filtered [index + byteIndex] = original [index + byteIndex];
-                    //G
-                    filtered [index + byteIndex + 1] = original [index + byteIndex + 1];
-                    //B
-                    filtered [index + byteIndex + 2] = original [index + byteIndex + 2];
-                    //A
-                    filtered [index + byteIndex + 3] = original [index + byteIndex + 3];
-                }
-                index += boundPixelWidth * BYTES_IN_PIXEL;
-
-                //Apply gauss filter
-
-                fixed (double* maskPtr = mask)
-                {
-                    AplyGaussAsm(index, arrayWidth, original, filtered, maskPtr, maskSize);
-                }
-
-                index += realWidth;
-
-                //Set end of the row
-                for (int i = 0; i < boundPixelWidth; i++)
-                {
-                    byteIndex = i * BYTES_IN_PIXEL;
-                    //R
-                    filtered [index + byteIndex] = original [index + byteIndex];
-                    //G
-                    filtered [index + byteIndex + 1] = original [index + byteIndex + 1];
-                    //B
-                    filtered [index + byteIndex + 2] = original [index + byteIndex + 2];
-                    //A
-                    filtered [index + byteIndex + 3] = original [index + byteIndex + 3];
-                }
-
-                index += boundPixelWidth * BYTES_IN_PIXEL;
-
-                OnProgressChanged(index / (float)bitmapLastIndex);
-
+                ApplyLaplaceAsm(image.Width, image.Height, original, filtered, mask, image.Width * image.Height * 4);
             }
+
+
+            ////  Set top and bottom bound
+            //SetTopBottomBorderAsm(original, filtered, boundTopBottomArraySizeInBytes, bottomBoundStartIndex);
+
+            //int index = boundTopBottomArraySizeInBytes;
+            //int realWidth = (image.Width - 2 * boundPixelWidth) * BYTES_IN_PIXEL;
+            //while (index < bottomBoundStartIndex)
+            //{
+
+            //    //Set start of the row
+            //    for (int i = 0; i < boundPixelWidth; i++)
+            //    {
+            //        byteIndex = i * BYTES_IN_PIXEL;
+            //        //R
+            //        filtered[index + byteIndex] = original[index + byteIndex];
+            //        //G
+            //        filtered[index + byteIndex + 1] = original[index + byteIndex + 1];
+            //        //B
+            //        filtered[index + byteIndex + 2] = original[index + byteIndex + 2];
+            //        //A
+            //        filtered[index + byteIndex + 3] = original[index + byteIndex + 3];
+            //    }
+            //    index += boundPixelWidth * BYTES_IN_PIXEL;
+
+            //    //Apply gauss filter
+
+            //    fixed (double* maskPtr = mask)
+            //    {
+            //        AplyGaussAsm(index, arrayWidth, original, filtered, maskPtr, 3);
+            //    }
+
+            //    index += realWidth;
+
+            //    //Set end of the row
+            //    for (int i = 0; i < boundPixelWidth; i++)
+            //    {
+            //        byteIndex = i * BYTES_IN_PIXEL;
+            //        //R
+            //        filtered[index + byteIndex] = original[index + byteIndex];
+            //        //G
+            //        filtered[index + byteIndex + 1] = original[index + byteIndex + 1];
+            //        //B
+            //        filtered[index + byteIndex + 2] = original[index + byteIndex + 2];
+            //        //A
+            //        filtered[index + byteIndex + 3] = original[index + byteIndex + 3];
+            //    }
+
+            //    index += boundPixelWidth * BYTES_IN_PIXEL;
+
+            //    OnProgressChanged(index / (float)bitmapLastIndex);
         }
 
         private event EventHandler<ProgressNotifierEventArgs> ProgressChanged;

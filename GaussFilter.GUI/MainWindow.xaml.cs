@@ -79,7 +79,7 @@ namespace GaussFilter
             stopwatch.Start();
             if (context.CSharpImplementationMode)
             {
-                context.FilteredImage = await RunCSharpImplementationFilter(frame, radius, image);
+                context.FilteredImage = await RunCSharpLaplaceFilter(image);//await RunCSharpImplementationFilter(frame, radius, image);
             }
             else if (context.AssemblerImplementationMode)
             {
@@ -128,6 +128,7 @@ namespace GaussFilter
                 return new GaussFilterAssembly(frame,radius,image,new StandardGaussMaskProvider(), dispatcher).ApplyAssemblyFilter(image);
             });
         }
+
         private async Task<Bitmap> RunCSharpImplementationFilter(int frame, double radius, Bitmap image)
         {
            
@@ -136,6 +137,33 @@ namespace GaussFilter
                 var gaussFilter = new GaussFilterCSharp(frame, radius, image, new StandardGaussMaskProvider(), dispatcher);
                 gaussFilter.ApplyUnsafe();
                 return gaussFilter.FilteredImage;
+            });
+        }
+
+
+        private int[] _laplaceMask1 = new int[] {
+                        0, -1, 0,
+                        -1, 4, -1,
+                        0, -1, 0 };
+
+        private int[] _laplaceMask2 = new int[] {
+                        -1, -1, -1,
+                        -1,  8, -1,
+                        -1, -1, -1 };
+
+        private int[] _laplaceMask3 = new int[] {
+                        1, -2, 1,
+                        -2,  4, -2,
+                        1, -2, 1 };
+
+        private async Task<Bitmap> RunCSharpLaplaceFilter(Bitmap image)
+        {
+            return await Task.Run(() =>
+            {
+                var laplaceFilter = new LaplaceFilterCSharp(_laplaceMask2, image, dispatcher);
+                laplaceFilter.ApplyUnsafe();
+
+                return laplaceFilter.FilteredImage;
             });
         }
 
