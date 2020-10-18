@@ -78,7 +78,10 @@ namespace GaussFilter.Algorithm
             int arrayWidth = image.Width;
             int byteIndex;
 
-            fixed(int* mask = new int[] { -1, -1, -1, -1, 8, -1, -1, -1, -1 })
+            fixed(int* mask = new int[] {
+                        -1, -1, -1,
+                        -1,  8, -1,
+                        -1, -1, -1 })
             {
                 ApplyLaplaceAsm(image.Width, image.Height, original, filtered, mask, image.Width * image.Height * 4);
             }
