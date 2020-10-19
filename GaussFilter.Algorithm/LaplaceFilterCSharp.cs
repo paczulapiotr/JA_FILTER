@@ -63,15 +63,15 @@ namespace GaussFilter.Algorithm
             for (int i = 0; i < boundTopBottomArraySize; i++)
             {
                 //Top bound R G B A
-                filtered[i * BYTES_IN_PIXEL] = original[i * BYTES_IN_PIXEL];
-                filtered[i * BYTES_IN_PIXEL + 1] = original[i * BYTES_IN_PIXEL + 1];
-                filtered[i * BYTES_IN_PIXEL + 2] = original[i * BYTES_IN_PIXEL + 2];
-                filtered[i * BYTES_IN_PIXEL + 3] = original[i * BYTES_IN_PIXEL + 3];
+                filtered[i * BYTES_IN_PIXEL] = 0;
+                filtered[i * BYTES_IN_PIXEL + 1] = 0;
+                filtered[i * BYTES_IN_PIXEL + 2] = 0;
+                filtered[i * BYTES_IN_PIXEL + 3] = 0;
                 //Bot bound R G B A
-                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL] = original[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL];
-                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 1] = original[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 1];
-                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 2] = original[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 2];
-                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 3] = original[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 3];
+                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL] = 0;
+                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 1] = 0;
+                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 2] = 0;
+                filtered[(bottomBoundStartIndex + i) * BYTES_IN_PIXEL + 3] = 0;
             }
 
             int index = boundTopBottomArraySize;
@@ -84,13 +84,13 @@ namespace GaussFilter.Algorithm
                 {
                     var subPixelIndex = (index + i) * BYTES_IN_PIXEL;
                     //R
-                    filtered[subPixelIndex] = original[subPixelIndex];
+                    filtered[subPixelIndex] = 0;
                     //G
-                    filtered[subPixelIndex + 1] = original[subPixelIndex + 1];
+                    filtered[subPixelIndex + 1] = 0;
                     //B
-                    filtered[subPixelIndex + 2] = original[subPixelIndex + 2];
+                    filtered[subPixelIndex + 2] = 0;
                     //A
-                    filtered[subPixelIndex + 3] = original[subPixelIndex + 3];
+                    filtered[subPixelIndex + 3] = 0;
                 }
                 index += boundPixelWidth;
 
@@ -106,13 +106,13 @@ namespace GaussFilter.Algorithm
                     var subPixelIndex = (index + i) * BYTES_IN_PIXEL;
 
                     //R
-                    filtered[subPixelIndex] = original[subPixelIndex];
+                    filtered[subPixelIndex] = 0;
                     //G
-                    filtered[subPixelIndex + 1] = original[subPixelIndex + 1];
+                    filtered[subPixelIndex + 1] = 0;
                     //B
-                    filtered[subPixelIndex + 2] = original[subPixelIndex + 2];
+                    filtered[subPixelIndex + 2] = 0;
                     //B
-                    filtered[subPixelIndex + 3] = original[subPixelIndex + 3];
+                    filtered[subPixelIndex + 3] = 0;
                 }
                 //Should it be here???
                 index += boundPixelWidth;
@@ -153,9 +153,9 @@ namespace GaussFilter.Algorithm
             }
 
             R = Math.Min(255, Math.Max(0, R));
-            G = Math.Min(255, Math.Max(0, R));
-            B = Math.Min(255, Math.Max(0, R));
-            A = Math.Min(255, Math.Max(0, R));
+            G = Math.Min(255, Math.Max(0, G));
+            B = Math.Min(255, Math.Max(0, B));
+            A = Math.Min(255, Math.Max(0, A));
 
             //Set R
             filtered[index * BYTES_IN_PIXEL] = (byte)(R);

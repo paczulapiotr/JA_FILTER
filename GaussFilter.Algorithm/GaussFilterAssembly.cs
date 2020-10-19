@@ -40,7 +40,7 @@ namespace GaussFilter.Algorithm
         }
 
         [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "laplace")]
-        private static extern unsafe int ApplyLaplaceAsm(int width, int height, byte* original, byte* filtered, int* mask, int imagePixelsCount);
+        private static extern unsafe int ApplyLaplaceAsm(int startingSubpixelIndex, int subpixelsToFilter, byte* original, byte* filtered, int* mask, int subpixelImageWidth);
 
         [DllImport("GaussFilter.Algorithm.ASM.dll", EntryPoint = "laplace")]
         private static extern unsafe int AplyGaussAsm(int index, int arrayWidth, byte* original, byte* filtered, double* mask, int maskSize);
@@ -83,7 +83,14 @@ namespace GaussFilter.Algorithm
                         -1,  8, -1,
                         -1, -1, -1 })
             {
-                ApplyLaplaceAsm(image.Width, image.Height, original, filtered, mask, image.Width * image.Height * 4);
+                var startingSubpixelIndex = image.Width * 4 + 4;
+                var imageSubpixelWidth = image.Width * 4;
+                var imageSubpixelWidthEditable = imageSubpixelWidth - 8;
+                for (int y = 2; y < image.Height; y++)
+                {
+                    ApplyLaplaceAsm(startingSubpixelIndex, imageSubpixelWidthEditable, original, filtered, mask, imageSubpixelWidth);
+                    startingSubpixelIndex += imageSubpixelWidth;
+                }
             }
 
 
