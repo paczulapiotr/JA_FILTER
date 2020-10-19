@@ -45,15 +45,9 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GaussFilterAssembly.cs" />
-    <Compile Include="GaussFilterCSharp.cs" />
+    <Compile Include="LaplaceFilterAssembly.cs" />
     <Compile Include="LaplaceFilterCSharp.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GaussFilter.Core\GaussFilter.Core.csproj">
-      <Project>{6bca5cc4-ce4b-4179-b1d6-d10b981b8144}</Project>
-      <Name>GaussFilter.Core</Name>
-    </ProjectReference>
+    <Compile Include="ProgressNotifier\ProgressNotifierEventArgs.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

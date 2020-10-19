@@ -1,17 +1,16 @@
-﻿using GaussFilter.Algorithm;
-using GaussFilter.Core.GaussMask;
-using GaussFilter.Model;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using System.Linq;
+using GaussFilter.Algorithm;
+using GaussFilter.Model;
 
 namespace GaussFilter
 {
@@ -29,7 +28,7 @@ namespace GaussFilter
             });
         }
 
-       
+
 
         private void Input_Path_Find(object sender, RoutedEventArgs e)
         {
@@ -44,12 +43,10 @@ namespace GaussFilter
             {
                 context.InputFilePath = openFile.FileName;
                 var newBitmap = new Bitmap(openFile.FileName);
-                int minSize = new [] { newBitmap.Width, newBitmap.Height }.Min();
+                int minSize = new[] { newBitmap.Width, newBitmap.Height }.Min();
                 if (minSize >= 50)
                 {
                     context.Image = newBitmap;
-                    int newKernel = (int)((double)minSize / 10d);
-                    context.MaximumKernelSize = (newKernel % 2 == 0) ? newKernel + 1 : newKernel;
                     PrintImageOnGUI(context.Image);
                 }
                 else
@@ -67,8 +64,6 @@ namespace GaussFilter
 
             var context = (DataContext as GaussDataContext);
             context.FilteredImage = null;
-            var frame = context.FrameSize;
-            var radius = context.GaussRadius;
             var image = context.Image;
             context.Image = null;
             Stopwatch stopwatch = new Stopwatch();
@@ -79,11 +74,11 @@ namespace GaussFilter
             stopwatch.Start();
             if (context.CSharpImplementationMode)
             {
-                context.FilteredImage = await RunCSharpLaplaceFilter(image);//await RunCSharpImplementationFilter(frame, radius, image);
+                context.FilteredImage = await RunCSharpLaplaceFilter(image);
             }
             else if (context.AssemblerImplementationMode)
             {
-                context.FilteredImage = await RunAssemblyImplementationFilter(frame, radius, image);
+                context.FilteredImage = await RunAssemblyImplementationFilter(image);
             }
             stopwatch.Stop();
             ProgressBar.Visibility = Visibility.Hidden;
@@ -121,25 +116,13 @@ namespace GaussFilter
 
         }
 
-        private async Task<Bitmap> RunAssemblyImplementationFilter(int frame, double radius, Bitmap image)
+        private async Task<Bitmap> RunAssemblyImplementationFilter(Bitmap image)
         {
             return await Task.Run(() =>
             {
-                return new GaussFilterAssembly(frame,radius,image,new StandardGaussMaskProvider(), dispatcher).ApplyAssemblyFilter(image);
+                return new LaplaceFilterAssembly(image).ApplyAssemblyFilter(image);
             });
         }
-
-        private async Task<Bitmap> RunCSharpImplementationFilter(int frame, double radius, Bitmap image)
-        {
-           
-            return await Task.Run(() =>
-            {
-                var gaussFilter = new GaussFilterCSharp(frame, radius, image, new StandardGaussMaskProvider(), dispatcher);
-                gaussFilter.ApplyUnsafe();
-                return gaussFilter.FilteredImage;
-            });
-        }
-
 
         private int[] _laplaceMask1 = new int[] {
                         0, -1, 0,

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GaussFilter.Core.ProgressNotifier
+namespace GaussFilter.ProgressNotifier
 {
     public class ProgressNotifierEventArgs : EventArgs
     {

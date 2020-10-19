@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using GaussFilter.Core.ProgressNotifier;
+using GaussFilter.ProgressNotifier;
 
 namespace GaussFilter.Algorithm
 {

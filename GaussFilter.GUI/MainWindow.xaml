@@ -28,41 +28,6 @@
                 <TextBox  Grid.Column="0" IsReadOnly="True"  Text="{Binding Path=InputFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
                 <Button Name="Find_Btn" Grid.Column="1" Margin="10 0 0 0" Click="Input_Path_Find">Znajdź</Button>
             </Grid>
-
-            <Grid  Margin="0 10 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0">Wielkość ramki:</Label>
-                <Label Margin="5" Grid.Column="1" Content="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></Label>
-            </Grid>
-            <Slider
-    Orientation="Horizontal"
-    Minimum="3"
-    Maximum="{Binding Path=MaximumKernelSize, UpdateSourceTrigger=PropertyChanged}"
-    Value="{Binding Path=FrameSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-    IsSnapToTickEnabled="True"
-    TickFrequency="2"
-/>
-            <Grid  Margin="0 10 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0">Promień:</Label>
-                <Label  Margin="5" Grid.Column="1" Content="{Binding Path=GaussRadius, UpdateSourceTrigger=PropertyChanged}"/>
-            </Grid>
-            <Slider
-    
-    Orientation="Horizontal"
-    Minimum="0.5"
-    TickFrequency="0.1"
-    IsSnapToTickEnabled="True"
-    Maximum="200"
-    Value="{Binding Path=GaussRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
- 
-/>
         </StackPanel>
 
         <Grid Grid.Row="1">
